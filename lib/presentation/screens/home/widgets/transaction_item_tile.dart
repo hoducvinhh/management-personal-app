@@ -21,7 +21,7 @@ class TransactionItemTile extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cat = transaction.category;
     final isIncome = transaction.isIncome;
-    final catColor = cat?.color ?? (isIncome ? AppColors.income : const Color(0xFF64748B));
+    final catColor = cat?.color ?? (isIncome ? AppColors.income : AppColors.cyan);
     final hasNote = transaction.note != null && transaction.note!.trim().isNotEmpty;
 
     // Primary Title: What the expense was for ("Làm gì") takes precedence!
@@ -29,7 +29,7 @@ class TransactionItemTile extends StatelessWidget {
         ? transaction.note!.trim()
         : (cat?.name ?? (isIncome ? 'Khoản thu' : 'Khoản chi'));
 
-    final badgeEmoji = cat?.emoji ?? (isIncome ? '💰' : '📝');
+    final badgeEmoji = cat?.emoji ?? (isIncome ? '💰' : '🏷️');
 
     return Dismissible(
       key: Key(transaction.id),

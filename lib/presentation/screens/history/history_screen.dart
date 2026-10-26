@@ -168,6 +168,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   _buildFilterChip(
                     label: 'Tháng này',
                     isSelected: filter.timeRange == HistoryTimeRange.thisMonth,
+                    selectedColor: AppColors.tabOverview,
                     onSelected: () =>
                         filterNotifier.setTimeRange(HistoryTimeRange.thisMonth),
                   ),
@@ -175,6 +176,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   _buildFilterChip(
                     label: 'Tháng trước',
                     isSelected: filter.timeRange == HistoryTimeRange.lastMonth,
+                    selectedColor: const Color(0xFF6366F1),
                     onSelected: () =>
                         filterNotifier.setTimeRange(HistoryTimeRange.lastMonth),
                   ),
@@ -182,6 +184,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   _buildFilterChip(
                     label: 'Hôm nay',
                     isSelected: filter.timeRange == HistoryTimeRange.today,
+                    selectedColor: AppColors.tabHistory,
                     onSelected: () =>
                         filterNotifier.setTimeRange(HistoryTimeRange.today),
                   ),
@@ -191,12 +194,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         ? 'Khoảng ngày: ${AppConstants.dateMonthFormatter.format(filter.customStartDate!)} - ${AppConstants.dateMonthFormatter.format(filter.customEndDate!)}'
                         : 'Tùy chọn khoảng ngày 📅',
                     isSelected: filter.timeRange == HistoryTimeRange.customRange,
+                    selectedColor: AppColors.pink,
                     onSelected: _pickCustomRange,
                   ),
                   const SizedBox(width: 6),
                   _buildFilterChip(
                     label: 'Tất cả thời gian',
                     isSelected: filter.timeRange == HistoryTimeRange.all,
+                    selectedColor: AppColors.tabBudget,
                     onSelected: () =>
                         filterNotifier.setTimeRange(HistoryTimeRange.all),
                   ),
