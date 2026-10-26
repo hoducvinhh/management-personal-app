@@ -5,6 +5,7 @@ import 'package:personal_expense_tracker/core/utils/currency_utils.dart';
 import 'package:personal_expense_tracker/core/utils/date_utils.dart';
 import 'package:personal_expense_tracker/data/models/budget_model.dart';
 import 'package:personal_expense_tracker/data/models/transaction_model.dart';
+import 'package:personal_expense_tracker/data/repositories/budget_repository.dart';
 import 'package:personal_expense_tracker/data/repositories/category_repository.dart';
 import 'package:personal_expense_tracker/data/repositories/transaction_repository.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -92,6 +93,7 @@ void main() {
     late Database testDb;
     late CategoryRepository catRepo;
     late TransactionRepository txRepo;
+    late BudgetRepository budgetRepo;
 
     setUp(() async {
       testDb = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
@@ -126,14 +128,15 @@ void main() {
           limit_amount REAL NOT NULL
         )
       ''');
-      await testDb.execute('CREATE INDEX idx_transactions_date ON transactions(date)');
-      await testDb.execute('CREATE INDEX idx_transactions_category ON transactions(category_id)');
-      await testDb.execute('CREATE INDEX idx_transactions_type_date ON transactions(type, date)');
-      await testDb.execute('CREATE INDEX idx_budgets_month ON budgets(month_key)');
+      await testDb.execute('CREATE INDEX idx_transactions_date_created ON transactions(date DESC, created_at DESC);');
+      await testDb.execute('CREATE INDEX idx_transactions_date_type_amount ON transactions(date, type, amount);');
+      await testDb.execute('CREATE INDEX idx_transactions_type_date_cat_amt ON transactions(type, date, category_id, amount);');
+      await testDb.execute('CREATE INDEX idx_budgets_lookup ON budgets(month_key, category_id);');
 
       final mockAppDb = _MockAppDatabase(testDb);
       catRepo = CategoryRepository(mockAppDb);
       txRepo = TransactionRepository(mockAppDb);
+      budgetRepo = BudgetRepository(mockAppDb);
     });
 
     tearDown(() async {
@@ -165,9 +168,10 @@ void main() {
       expect(categories.firstWhere((c) => c.id == 'cat_food').name, 'Ăn uống');
     });
 
-    test('Thêm 3 giao dịch và kiểm tra SQL Aggregate Summary', () async {
+    test('Thêm 3 giao dịch và kiểm tra SQL Aggregate Summary & Single-query Budget', () async {
       final now = DateTime.now();
       const uuid = Uuid();
+      final monthKey = AppDateUtils.toMonthKey(now);
 
       await testDb.insert('categories', {
         'id': 'cat_food',
@@ -197,7 +201,7 @@ void main() {
         createdAt: now,
       ));
 
-      // 2 Chi: Ăn trưa 50.000 & Siêu thị 450.000
+      // 2 Chi: Ăn trưa 50.000 & Siêu thị 450.000 (Tổng 500.000)
       await txRepo.insertTransaction(TransactionModel(
         id: uuid.v4(),
         amount: 50000,
@@ -230,6 +234,30 @@ void main() {
       expect(breakdown.length, 1);
       expect(breakdown.first.totalAmount, 500000);
       expect(breakdown.first.percentage, 100.0);
+
+      // Set Overall and Category Budgets
+      await budgetRepo.setBudget(
+        monthKey: monthKey,
+        limitAmount: 10000000,
+      );
+      await budgetRepo.setBudget(
+        categoryId: 'cat_food',
+        monthKey: monthKey,
+        limitAmount: 2000000,
+      );
+
+      // Verify single atomic query results
+      final overallBudget = await budgetRepo.getOverallBudget(monthKey);
+      expect(overallBudget, isNotNull);
+      expect(overallBudget!.limitAmount, 10000000);
+      expect(overallBudget.spentAmount, 500000);
+      expect(overallBudget.remainingAmount, 9500000);
+
+      final catBudgets = await budgetRepo.getCategoryBudgets(monthKey);
+      expect(catBudgets.length, 1);
+      expect(catBudgets.first.limitAmount, 2000000);
+      expect(catBudgets.first.spentAmount, 500000);
+      expect(catBudgets.first.remainingAmount, 1500000);
     });
 
     test('Hiệu năng SQLite Batch: Nạp 1.000 bản ghi và đo thời gian truy vấn', () async {

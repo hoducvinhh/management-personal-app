@@ -13,74 +13,68 @@ class BudgetRepository {
 
   Future<BudgetModel?> getOverallBudget(String monthKey) async {
     final db = await _dbHelper.database;
-    final results = await db.query(
-      'budgets',
-      where: 'month_key = ? AND (category_id IS NULL OR category_id = "")',
-      whereArgs: [monthKey],
-      limit: 1,
-    );
+    final monthDate = AppDateUtils.fromMonthKey(monthKey);
+    final startDate = AppDateUtils.startOfMonth(monthDate).toIso8601String();
+    final endDate = AppDateUtils.endOfMonth(monthDate).toIso8601String();
 
+    // Single atomic query: fetches budget limit and spent amount simultaneously
+    final query = '''
+      SELECT 
+        b.id, b.category_id, b.month_key, b.limit_amount,
+        (
+          SELECT COALESCE(SUM(amount), 0.0) 
+          FROM transactions 
+          WHERE type = 'EXPENSE' AND date >= ? AND date <= ?
+        ) as spent_amount
+      FROM budgets b
+      WHERE b.month_key = ? AND (b.category_id IS NULL OR b.category_id = '')
+      LIMIT 1
+    ''';
+
+    final results = await db.rawQuery(query, [startDate, endDate, monthKey]);
     if (results.isEmpty) return null;
 
-    final monthDate = AppDateUtils.fromMonthKey(monthKey);
-    final startDate = AppDateUtils.startOfMonth(monthDate);
-    final endDate = AppDateUtils.endOfMonth(monthDate);
-
-    // Calculate total spent in month
-    final spentResult = await db.rawQuery('''
-      SELECT SUM(amount) as total
-      FROM transactions
-      WHERE type = 'EXPENSE' AND date >= ? AND date <= ?
-    ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
-
-    final spent = (spentResult.first['total'] as num?)?.toDouble() ?? 0.0;
+    final spent = (results.first['spent_amount'] as num?)?.toDouble() ?? 0.0;
     return BudgetModel.fromMap(results.first, spentAmount: spent);
   }
 
   Future<List<BudgetModel>> getCategoryBudgets(String monthKey) async {
     final db = await _dbHelper.database;
-    final results = await db.rawQuery('''
+    final monthDate = AppDateUtils.fromMonthKey(monthKey);
+    final startDate = AppDateUtils.startOfMonth(monthDate).toIso8601String();
+    final endDate = AppDateUtils.endOfMonth(monthDate).toIso8601String();
+
+    // Single optimized query with indexed LEFT JOIN & GROUP BY:
+    // Computes spent per category on SQLite engine level without loading extra records
+    final query = '''
       SELECT 
         b.id, b.category_id, b.month_key, b.limit_amount,
         c.name as category_name, c.type as category_type, 
         c.icon_code as category_icon_code, c.color_hex as category_color_hex, 
-        c.is_default as category_is_default
+        c.is_default as category_is_default,
+        COALESCE(SUM(t.amount), 0.0) as spent_amount
       FROM budgets b
       JOIN categories c ON b.category_id = c.id
-      WHERE b.month_key = ? AND b.category_id IS NOT NULL AND b.category_id != ""
+      LEFT JOIN transactions t ON t.category_id = b.category_id 
+        AND t.type = 'EXPENSE' 
+        AND t.date >= ? AND t.date <= ?
+      WHERE b.month_key = ? AND b.category_id IS NOT NULL AND b.category_id != ''
+      GROUP BY b.id
       ORDER BY b.limit_amount DESC
-    ''', [monthKey]);
+    ''';
 
-    final monthDate = AppDateUtils.fromMonthKey(monthKey);
-    final startDate = AppDateUtils.startOfMonth(monthDate);
-    final endDate = AppDateUtils.endOfMonth(monthDate);
-
-    // Query spent per category
-    final spentRows = await db.rawQuery('''
-      SELECT category_id, SUM(amount) as total
-      FROM transactions
-      WHERE type = 'EXPENSE' AND date >= ? AND date <= ?
-      GROUP BY category_id
-    ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
-
-    final Map<String, double> categorySpentMap = {};
-    for (final row in spentRows) {
-      final catId = row['category_id'] as String;
-      final total = (row['total'] as num?)?.toDouble() ?? 0.0;
-      categorySpentMap[catId] = total;
-    }
+    final results = await db.rawQuery(query, [startDate, endDate, monthKey]);
 
     return results.map((row) {
-      final catId = row['category_id'] as String;
       final category = CategoryModel(
-        id: catId,
+        id: row['category_id'] as String,
         name: row['category_name'] as String,
         type: row['category_type'] as String,
         iconCode: row['category_icon_code'] as String,
         colorHex: row['category_color_hex'] as String,
         isDefault: (row['category_is_default'] as int? ?? 0) == 1,
       );
-      final spent = categorySpentMap[catId] ?? 0.0;
+      final spent = (row['spent_amount'] as num?)?.toDouble() ?? 0.0;
       return BudgetModel.fromMap(row, spentAmount: spent, category: category);
     }).toList();
   }
@@ -95,10 +89,12 @@ class BudgetRepository {
 
     final existing = await db.query(
       'budgets',
+      columns: ['id'],
       where: cleanCatId == null
-          ? 'month_key = ? AND (category_id IS NULL OR category_id = "")'
+          ? "month_key = ? AND (category_id IS NULL OR category_id = '')"
           : 'month_key = ? AND category_id = ?',
       whereArgs: cleanCatId == null ? [monthKey] : [monthKey, cleanCatId],
+      limit: 1,
     );
 
     if (existing.isNotEmpty) {
