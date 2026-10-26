@@ -9,15 +9,16 @@ final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
   return BudgetRepository();
 });
 
-class BudgetVersionNotifier extends StateNotifier<int> {
-  BudgetVersionNotifier() : super(0);
+class BudgetVersionNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
   void bump() => state = state + 1;
 }
 
 final budgetVersionProvider =
-    StateNotifierProvider<BudgetVersionNotifier, int>((ref) {
-  return BudgetVersionNotifier();
-});
+    NotifierProvider<BudgetVersionNotifier, int>(
+        BudgetVersionNotifier.new);
 
 // Overall monthly budget
 final overallBudgetProvider =
