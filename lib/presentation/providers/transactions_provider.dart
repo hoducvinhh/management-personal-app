@@ -9,15 +9,16 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
 });
 
 // A simple tick notifier to trigger data reload when transactions change
-class TransactionVersionNotifier extends StateNotifier<int> {
-  TransactionVersionNotifier() : super(0);
+class TransactionVersionNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
   void bump() => state = state + 1;
 }
 
 final transactionVersionProvider =
-    StateNotifierProvider<TransactionVersionNotifier, int>((ref) {
-  return TransactionVersionNotifier();
-});
+    NotifierProvider<TransactionVersionNotifier, int>(
+        TransactionVersionNotifier.new);
 
 // Monthly summary for currently selected month
 final monthlySummaryProvider =
@@ -80,20 +81,21 @@ class HistoryFilterState {
   }
 }
 
-class HistoryFilterNotifier extends StateNotifier<HistoryFilterState> {
-  HistoryFilterNotifier() : super(const HistoryFilterState());
+class HistoryFilterNotifier extends Notifier<HistoryFilterState> {
+  @override
+  HistoryFilterState build() => const HistoryFilterState();
 
   void setType(String type) => state = state.copyWith(type: type);
   void setCategoryId(String catId) => state = state.copyWith(categoryId: catId);
-  void setTimeRange(HistoryTimeRange range) => state = state.copyWith(timeRange: range);
+  void setTimeRange(HistoryTimeRange range) =>
+      state = state.copyWith(timeRange: range);
   void setSearchQuery(String query) => state = state.copyWith(searchQuery: query);
   void reset() => state = const HistoryFilterState();
 }
 
 final historyFilterProvider =
-    StateNotifierProvider<HistoryFilterNotifier, HistoryFilterState>((ref) {
-  return HistoryFilterNotifier();
-});
+    NotifierProvider<HistoryFilterNotifier, HistoryFilterState>(
+        HistoryFilterNotifier.new);
 
 // Filtered transactions for History screen
 final filteredTransactionsProvider =
@@ -113,7 +115,8 @@ final filteredTransactionsProvider =
       endDate = AppDateUtils.endOfMonth(selectedMonth);
       break;
     case HistoryTimeRange.lastMonth:
-      final lastMonth = DateTime(selectedMonth.year, selectedMonth.month - 1, 1);
+      final lastMonth =
+          DateTime(selectedMonth.year, selectedMonth.month - 1, 1);
       startDate = AppDateUtils.startOfMonth(lastMonth);
       endDate = AppDateUtils.endOfMonth(lastMonth);
       break;
@@ -161,6 +164,7 @@ class TransactionActionsNotifier {
   }
 }
 
-final transactionActionsProvider = Provider<TransactionActionsNotifier>((ref) {
+final transactionActionsProvider =
+    Provider<TransactionActionsNotifier>((ref) {
   return TransactionActionsNotifier(ref);
 });
