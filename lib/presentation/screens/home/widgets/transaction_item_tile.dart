@@ -85,6 +85,37 @@ class TransactionItemTile extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
+        onLongPress: onDelete != null
+            ? () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Xác nhận xóa'),
+                    content: Text(
+                      transaction.isIncome
+                          ? 'Bạn có chắc muốn xóa khoản thu ${CurrencyUtils.format(transaction.amount)} này không?'
+                          : 'Bạn có chắc muốn xóa khoản chi ${CurrencyUtils.format(transaction.amount)} này không?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Hủy'),
+                      ),
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.expense,
+                        ),
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Xóa'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  onDelete?.call();
+                }
+              }
+            : null,
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

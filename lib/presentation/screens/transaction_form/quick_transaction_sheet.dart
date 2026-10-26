@@ -156,6 +156,56 @@ class _QuickTransactionSheetState
     }
   }
 
+  Future<void> _delete() async {
+    final edit = widget.editTransaction;
+    if (edit == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xác nhận xóa'),
+        content: Text(
+          edit.isIncome
+              ? 'Bạn có chắc chắn muốn xóa khoản thu ${CurrencyUtils.format(edit.amount)} này không?'
+              : 'Bạn có chắc chắn muốn xóa khoản chi ${CurrencyUtils.format(edit.amount)} này không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.expense,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xóa vĩnh viễn'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      HapticFeedback.mediumImpact();
+      final actions = ref.read(transactionActionsProvider);
+      await actions.deleteTransaction(edit.id);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              edit.isIncome
+                  ? 'Đã xóa khoản thu thành công'
+                  : 'Đã xóa khoản chi thành công',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -208,9 +258,23 @@ class _QuickTransactionSheetState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.pop(context),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.editTransaction != null)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            color: AppColors.expense,
+                          ),
+                          tooltip: 'Xóa giao dịch',
+                          onPressed: _delete,
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -700,28 +764,85 @@ class _QuickTransactionSheetState
               ),
               const SizedBox(height: 22),
 
-              // 6. Nút Lưu Giao Dịch tràn đáy
-              FilledButton(
-                onPressed: _save,
-                style: FilledButton.styleFrom(
-                  backgroundColor: primaryActiveColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              // 6. Nút Lưu / Cập nhật / Xóa Giao Dịch
+              if (widget.editTransaction != null)
+                Row(
+                  children: [
+                    // Nút Xóa giao dịch nổi bật
+                    OutlinedButton.icon(
+                      onPressed: _delete,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.expense,
+                        side: BorderSide(
+                          color: AppColors.expense.withValues(alpha: 0.6),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        size: 20,
+                        color: AppColors.expense,
+                      ),
+                      label: const Text(
+                        'Xóa',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.expense,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Nút Cập nhật giao dịch
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: _save,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: primaryActiveColor,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: const Text(
+                          'Cập nhật giao dịch',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                FilledButton(
+                  onPressed: _save,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: primaryActiveColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
                   ),
-                  elevation: 2,
-                ),
-                child: Text(
-                  widget.editTransaction != null
-                      ? 'Cập nhật giao dịch'
-                      : 'Lưu giao dịch',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  child: const Text(
+                    'Lưu giao dịch',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

@@ -23,6 +23,7 @@ class BudgetModel {
   double get percentSpent =>
       limitAmount > 0 ? (spentAmount / limitAmount).clamp(0.0, 2.0) : 0.0;
   bool get isOverBudget => spentAmount > limitAmount;
+  double get overBudgetAmount => isOverBudget ? (spentAmount - limitAmount) : 0.0;
 
   String get statusMessage {
     if (isOverBudget) {
