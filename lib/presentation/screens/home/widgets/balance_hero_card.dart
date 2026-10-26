@@ -13,31 +13,60 @@ class BalanceHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF4F46E5), // Indigo Blue 600
-            Color(0xFF6366F1), // Indigo Blue 500
-            Color(0xFF4338CA), // Indigo Blue 700
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: AppColors.heroGradient,
+            stops: [0.0, 0.25, 0.55, 0.8, 1.0],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.35),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Decorative glowing cyan orb
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.cyan.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+            // Decorative glowing warm amber orb
+            Positioned(
+              bottom: -40,
+              left: -30,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.amber.withValues(alpha: 0.2),
+                ),
+              ),
+            ),
+            // Card Content
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -215,6 +244,10 @@ class BalanceHeroCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  ],
+),
+),
+);
   }
 }
