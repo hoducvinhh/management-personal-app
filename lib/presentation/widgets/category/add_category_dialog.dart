@@ -234,7 +234,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
                       _selectedColorHex = hex;
                     });
                   },
-                  shape: const CircleBorder(),
+                  customBorder: const CircleBorder(),
                   child: Container(
                     width: 32,
                     height: 32,

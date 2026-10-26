@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/transaction_model.dart';
@@ -187,7 +188,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   const SizedBox(width: 6),
                   _buildFilterChip(
                     label: filter.timeRange == HistoryTimeRange.customRange
-                        ? 'Khoảng ngày: ${AppDateUtils.dateMonthFormatter.format(filter.customStartDate!)} - ${AppDateUtils.dateMonthFormatter.format(filter.customEndDate!)}'
+                        ? 'Khoảng ngày: ${AppConstants.dateMonthFormatter.format(filter.customStartDate!)} - ${AppConstants.dateMonthFormatter.format(filter.customEndDate!)}'
                         : 'Tùy chọn khoảng ngày 📅',
                     isSelected: filter.timeRange == HistoryTimeRange.customRange,
                     onSelected: _pickCustomRange,
