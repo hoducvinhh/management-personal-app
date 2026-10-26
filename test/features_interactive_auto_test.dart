@@ -109,8 +109,16 @@ void main() {
     );
   }
 
+  void setPhoneSize(WidgetTester tester) {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+  }
+
   group('A. TÍNH NĂNG GHI CHÉP GIAO DỊCH TỰ DO (QuickTransactionSheet)', () {
     testWidgets('Ghi chép chi tiêu tự do: Nhập số tiền + ghi mục đích làm gì, KHÔNG cần gán danh mục', (tester) async {
+      setPhoneSize(tester);
       await tester.pumpWidget(
         buildTestApp(
           Scaffold(
@@ -166,6 +174,7 @@ void main() {
     });
 
     testWidgets('Gán danh mục tùy ý và hủy gán (toggle off) danh mục thành công', (tester) async {
+      setPhoneSize(tester);
       await tester.pumpWidget(
         buildTestApp(
           Scaffold(
@@ -218,6 +227,7 @@ void main() {
     });
 
     testWidgets('Chuyển đổi Khoản thu: đổi giao diện và nạp danh mục nguồn thu', (tester) async {
+      setPhoneSize(tester);
       await tester.pumpWidget(
         buildTestApp(
           Scaffold(
@@ -264,6 +274,7 @@ void main() {
 
   group('B. TÍNH NĂNG ĐIỀU HƯỚNG 4 TAB CHÍNH (MainScreen Navigation)', () {
     testWidgets('Chuyển đổi mượt mà giữa các tab Tổng quan, Lịch sử, Ngân sách, Thống kê', (tester) async {
+      setPhoneSize(tester);
       await tester.pumpWidget(buildTestApp(const MainScreen()));
       await tester.pumpAndSettle();
 
@@ -299,6 +310,7 @@ void main() {
 
   group('C. TÍNH NĂNG TẠO DANH MỤC & ĐẶT NGÂN SÁCH (Dialogs)', () {
     testWidgets('Tạo danh mục tùy biến mới bằng AddCategoryDialog', (tester) async {
+      setPhoneSize(tester);
       await tester.pumpWidget(
         buildTestApp(
           Scaffold(
@@ -333,6 +345,7 @@ void main() {
     });
 
     testWidgets('Thiết lập hạn mức ngân sách tổng tháng qua SetBudgetDialog', (tester) async {
+      setPhoneSize(tester);
       await tester.pumpWidget(
         buildTestApp(
           Scaffold(
