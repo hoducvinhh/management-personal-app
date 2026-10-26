@@ -85,7 +85,7 @@ class StatisticsScreen extends ConsumerWidget {
                 insightsAsync.when(
                   data: (insights) => SmartInsightsCard(insights: insights),
                   loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
                 const SizedBox(height: 16),
 
