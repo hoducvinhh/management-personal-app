@@ -118,28 +118,24 @@ class _QuickTransactionSheetState
       return;
     }
 
-    if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng chọn danh mục'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
     HapticFeedback.lightImpact();
     final actions = ref.read(transactionActionsProvider);
+    final rawNote = _noteController.text.trim();
+    // Use user-specified note ("làm gì"). If empty and no category selected, fallback to friendly text
+    final noteToSave = rawNote.isNotEmpty
+        ? rawNote
+        : (_selectedCategoryId == null
+            ? (_type == 'INCOME' ? 'Khoản thu' : 'Khoản chi')
+            : null);
 
     if (widget.editTransaction != null) {
       final updated = widget.editTransaction!.copyWith(
         amount: _amount,
         type: _type,
-        categoryId: _selectedCategoryId!,
+        categoryId: _selectedCategoryId,
+        clearCategory: _selectedCategoryId == null,
         date: _selectedDate,
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
+        note: noteToSave,
       );
       await actions.updateTransaction(updated);
     } else {
@@ -147,11 +143,9 @@ class _QuickTransactionSheetState
         id: _uuid.v4(),
         amount: _amount,
         type: _type,
-        categoryId: _selectedCategoryId!,
+        categoryId: _selectedCategoryId,
         date: _selectedDate,
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
+        note: noteToSave,
         createdAt: DateTime.now(),
       );
       await actions.addTransaction(newTx);
@@ -168,12 +162,6 @@ class _QuickTransactionSheetState
     final categories = _type == 'EXPENSE'
         ? ref.watch(expenseCategoriesProvider)
         : ref.watch(incomeCategoriesProvider);
-
-    if (categories.isNotEmpty &&
-        (_selectedCategoryId == null ||
-            !categories.any((c) => c.id == _selectedCategoryId))) {
-      _selectedCategoryId = categories.first.id;
-    }
 
     final isIncome = _type == 'INCOME';
     final primaryActiveColor = isIncome ? AppColors.income : AppColors.expense;
@@ -405,16 +393,124 @@ class _QuickTransactionSheetState
               ),
               const SizedBox(height: 18),
 
-              // 3. Lưới Chọn Danh Mục + Nút Thêm Danh Mục Tùy Ý
+              // 3. Nội dung chi tiêu ("Làm gì") - Không bắt buộc phân loại, ghi rõ mục đích là đủ
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkBackground : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkSurfaceLight
+                        : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.edit_note_rounded,
+                      color: primaryActiveColor,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _noteController,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: isIncome
+                              ? 'Nguồn thu từ đâu? (vd: Tiền lương, Thưởng...)'
+                              : 'Chi tiêu làm gì? (vd: Cà phê sáng, Đổ xăng...)',
+                          hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? Colors.white38 : Colors.black38,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // 4. Chọn ngày giao dịch
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Danh mục',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                  InkWell(
+                    onTap: _pickDate,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Ngày: ${AppDateUtils.formatRelativeDate(_selectedDate)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Icon(Icons.arrow_drop_down_rounded,
+                              size: 18, color: Colors.grey),
+                        ],
+                      ),
                     ),
+                  ),
+                  if (_selectedCategoryId != null)
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _selectedCategoryId = null;
+                        });
+                      },
+                      icon: const Icon(Icons.close_rounded,
+                          size: 14, color: Colors.grey),
+                      label: const Text(
+                        'Bỏ gán danh mục',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // 5. Gán Danh Mục (Tùy chọn - khi nào muốn gán thì gán)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        'Gán danh mục',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '(Tùy chọn)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white54 : Colors.black54,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
                   ),
                   TextButton.icon(
                     style: TextButton.styleFrom(
@@ -438,7 +534,8 @@ class _QuickTransactionSheetState
                 height: 170,
                 child: GridView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: categories.length + 1,
+                  // +1 for 'Không phân loại', +1 for 'Tạo mới'
+                  itemCount: categories.length + 2,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 10,
@@ -446,8 +543,64 @@ class _QuickTransactionSheetState
                     childAspectRatio: 0.85,
                   ),
                   itemBuilder: (ctx, index) {
-                    if (index == categories.length) {
-                      // Add Category Tile
+                    // Tile 0: "Không phân loại"
+                    if (index == 0) {
+                      final isUncategorized = _selectedCategoryId == null;
+                      return InkWell(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _selectedCategoryId = null;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isUncategorized
+                                ? const Color(0xFF64748B).withValues(alpha: 0.18)
+                                : (isDark
+                                    ? AppColors.darkBackground
+                                    : const Color(0xFFF8FAFC)),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isUncategorized
+                                  ? const Color(0xFF64748B)
+                                  : (isDark
+                                      ? AppColors.darkSurfaceLight
+                                      : const Color(0xFFE2E8F0)),
+                              width: isUncategorized ? 2 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('📝', style: TextStyle(fontSize: 24)),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Không phân loại',
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: isUncategorized
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isUncategorized
+                                      ? (isDark ? Colors.white : const Color(0xFF334155))
+                                      : (isDark ? Colors.white70 : Colors.black87),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    // Last Tile: "Thêm mới"
+                    if (index == categories.length + 1) {
                       return InkWell(
                         onTap: () {
                           AddCategoryDialog.show(context, initialType: _type);
@@ -480,13 +633,19 @@ class _QuickTransactionSheetState
                       );
                     }
 
-                    final cat = categories[index];
+                    // Existing categories (1 to categories.length)
+                    final cat = categories[index - 1];
                     final isSelected = cat.id == _selectedCategoryId;
                     return InkWell(
                       onTap: () {
                         HapticFeedback.selectionClick();
                         setState(() {
-                          _selectedCategoryId = cat.id;
+                          // Tapping selected category again will deselect it (toggle off)
+                          if (_selectedCategoryId == cat.id) {
+                            _selectedCategoryId = null;
+                          } else {
+                            _selectedCategoryId = cat.id;
+                          }
                         });
                       },
                       borderRadius: BorderRadius.circular(14),
@@ -539,91 +698,9 @@ class _QuickTransactionSheetState
                   },
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // 4. Ngày & Ghi chú
-              Row(
-                children: [
-                  // Chọn ngày
-                  Expanded(
-                    child: InkWell(
-                      onTap: _pickDate,
-                      borderRadius: BorderRadius.circular(14),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.darkBackground
-                              : const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.darkSurfaceLight
-                                : const Color(0xFFE2E8F0),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_today_rounded,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                AppDateUtils.formatRelativeDate(_selectedDate),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Ghi chú ngắn
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.darkBackground
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? AppColors.darkSurfaceLight
-                              : const Color(0xFFE2E8F0),
-                        ),
-                      ),
-                      child: TextField(
-                        controller: _noteController,
-                        style: const TextStyle(fontSize: 13),
-                        decoration: const InputDecoration(
-                          hintText: 'Ghi chú (vd: Ăn trưa bún chả)',
-                          hintStyle: TextStyle(fontSize: 12, color: Colors.grey),
-                          border: InputBorder.none,
-                          icon: Icon(
-                            Icons.edit_note_rounded,
-                            size: 20,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 22),
 
-              // 5. Nút Lưu Giao Dịch tràn đáy
+              // 6. Nút Lưu Giao Dịch tràn đáy
               FilledButton(
                 onPressed: _save,
                 style: FilledButton.styleFrom(
