@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/utils/date_utils.dart';
+import '../../../data/models/transaction_model.dart';
 import '../../providers/categories_provider.dart';
 import '../../providers/transactions_provider.dart';
 import '../home/widgets/transaction_item_tile.dart';
@@ -33,6 +35,36 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     });
   }
 
+  Future<void> _pickCustomRange() async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
+      initialDateRange: DateTimeRange(
+        start: now.subtract(const Duration(days: 7)),
+        end: now,
+      ),
+      helpText: 'CHỌN KHOẢNG NGÀY',
+      cancelText: 'HỦY',
+      confirmText: 'ÁP DỤNG',
+      saveText: 'ÁP DỤNG',
+    );
+    if (picked != null) {
+      final endOfDay = DateTime(
+        picked.end.year,
+        picked.end.month,
+        picked.end.day,
+        23,
+        59,
+        59,
+      );
+      ref
+          .read(historyFilterProvider.notifier)
+          .setCustomRange(picked.start, endOfDay);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final filter = ref.watch(historyFilterProvider);
@@ -58,7 +90,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Search Bar
+            // 1. Search Bar with Debounce 300ms
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: Container(
@@ -97,7 +129,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               ),
             ),
 
-            // 2. Filter Chips: Type & Time Range
+            // 2. Filter Chips: Type & Time Range (including Custom Range)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -154,6 +186,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   ),
                   const SizedBox(width: 6),
                   _buildFilterChip(
+                    label: filter.timeRange == HistoryTimeRange.customRange
+                        ? 'Khoảng ngày: ${AppDateUtils.dateMonthFormatter.format(filter.customStartDate!)} - ${AppDateUtils.dateMonthFormatter.format(filter.customEndDate!)}'
+                        : 'Tùy chọn khoảng ngày 📅',
+                    isSelected: filter.timeRange == HistoryTimeRange.customRange,
+                    onSelected: _pickCustomRange,
+                  ),
+                  const SizedBox(width: 6),
+                  _buildFilterChip(
                     label: 'Tất cả thời gian',
                     isSelected: filter.timeRange == HistoryTimeRange.all,
                     onSelected: () =>
@@ -198,7 +238,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
             const Divider(height: 16, thickness: 0.5),
 
-            // 3. Transactions List
+            // 3. Transactions List (Grouped by relative date)
             Expanded(
               child: transactionsAsync.when(
                 data: (transactions) {
@@ -246,6 +286,15 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     }
                   }
 
+                  // Group transactions by date string
+                  final grouped = <String, List<TransactionModel>>{};
+                  for (final tx in transactions) {
+                    final dateKey = AppDateUtils.formatRelativeDate(tx.date);
+                    grouped.putIfAbsent(dateKey, () => []).add(tx);
+                  }
+
+                  final dateKeys = grouped.keys.toList();
+
                   return Column(
                     children: [
                       // Mini status bar
@@ -289,29 +338,57 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      // List
+
+                      // Grouped List
                       Expanded(
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: transactions.length,
-                          itemBuilder: (ctx, index) {
-                            final tx = transactions[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: TransactionItemTile(
-                                transaction: tx,
-                                onTap: () {
-                                  QuickTransactionSheet.show(
-                                    context,
-                                    editTransaction: tx,
+                          itemCount: dateKeys.length,
+                          itemBuilder: (ctx, groupIndex) {
+                            final dateKey = dateKeys[groupIndex];
+                            final groupItems = grouped[dateKey]!;
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 12,
+                                    bottom: 6,
+                                    left: 4,
+                                  ),
+                                  child: Text(
+                                    dateKey,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? AppColors.darkTextSecondary
+                                          : AppColors.lightTextSecondary,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                ...groupItems.map((tx) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: TransactionItemTile(
+                                      transaction: tx,
+                                      onTap: () {
+                                        QuickTransactionSheet.show(
+                                          context,
+                                          editTransaction: tx,
+                                        );
+                                      },
+                                      onDelete: () {
+                                        ref
+                                            .read(transactionActionsProvider)
+                                            .deleteTransaction(tx.id);
+                                      },
+                                    ),
                                   );
-                                },
-                                onDelete: () {
-                                  ref
-                                      .read(transactionActionsProvider)
-                                      .deleteTransaction(tx.id);
-                                },
-                              ),
+                                }),
+                              ],
                             );
                           },
                         ),

@@ -6,6 +6,7 @@ import '../../../data/models/transaction_model.dart';
 import '../../../data/repositories/transaction_repository.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/selected_month_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../providers/transactions_provider.dart';
 import '../budget/widgets/set_budget_dialog.dart';
 import '../transaction_form/quick_transaction_sheet.dart';
@@ -55,13 +56,31 @@ class HomeScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Quản lý chi tiêu',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.3,
-                            ),
+                          Row(
+                            children: [
+                              const Text(
+                                'Quản lý chi tiêu',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              IconButton(
+                                icon: Icon(
+                                  isDark
+                                      ? Icons.light_mode_rounded
+                                      : Icons.dark_mode_rounded,
+                                  size: 20,
+                                  color: isDark ? Colors.amber : AppColors.primary,
+                                ),
+                                tooltip: isDark ? 'Chế độ sáng' : 'Chế độ tối',
+                                onPressed: () {
+                                  ref.read(themeModeProvider.notifier).toggle();
+                                },
+                              ),
+                            ],
                           ),
                           // Month Selector with < >
                           Container(
