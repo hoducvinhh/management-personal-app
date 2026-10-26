@@ -4,7 +4,7 @@ class TransactionModel {
   final String id;
   final double amount;
   final String type; // 'EXPENSE' or 'INCOME'
-  final String categoryId;
+  final String? categoryId; // Optional category: user can assign or leave unassigned
   final DateTime date;
   final String? note;
   final DateTime createdAt;
@@ -16,7 +16,7 @@ class TransactionModel {
     required this.id,
     required this.amount,
     required this.type,
-    required this.categoryId,
+    this.categoryId,
     required this.date,
     this.note,
     required this.createdAt,
@@ -25,12 +25,13 @@ class TransactionModel {
 
   bool get isExpense => type == 'EXPENSE';
   bool get isIncome => type == 'INCOME';
+  bool get hasCategory => categoryId != null && categoryId!.isNotEmpty;
 
   factory TransactionModel.fromMap(Map<String, dynamic> map) {
     CategoryModel? category;
     if (map.containsKey('category_name') && map['category_name'] != null) {
       category = CategoryModel(
-        id: map['category_id'] as String,
+        id: (map['category_id'] as String?) ?? '',
         name: map['category_name'] as String,
         type: map['category_type'] as String? ?? map['type'] as String,
         iconCode: map['category_icon_code'] as String? ?? 'inventory_2',
@@ -43,7 +44,7 @@ class TransactionModel {
       id: map['id'] as String,
       amount: (map['amount'] as num).toDouble(),
       type: map['type'] as String,
-      categoryId: map['category_id'] as String,
+      categoryId: map['category_id'] as String?,
       date: DateTime.parse(map['date'] as String),
       note: map['note'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
@@ -68,6 +69,7 @@ class TransactionModel {
     double? amount,
     String? type,
     String? categoryId,
+    bool clearCategory = false,
     DateTime? date,
     String? note,
     DateTime? createdAt,
@@ -77,7 +79,7 @@ class TransactionModel {
       id: id ?? this.id,
       amount: amount ?? this.amount,
       type: type ?? this.type,
-      categoryId: categoryId ?? this.categoryId,
+      categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
       date: date ?? this.date,
       note: note ?? this.note,
       createdAt: createdAt ?? this.createdAt,

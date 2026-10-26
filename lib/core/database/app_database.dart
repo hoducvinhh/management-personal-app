@@ -40,9 +40,10 @@ class AppDatabase {
 
     return await openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onConfigure: _onConfigure,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -60,6 +61,38 @@ class AppDatabase {
     await db.execute('PRAGMA foreign_keys = ON;');
   }
 
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Migrate transactions table to allow category_id to be NULL
+      await db.execute('PRAGMA foreign_keys = OFF;');
+      await db.execute('ALTER TABLE transactions RENAME TO _transactions_old;');
+      await db.execute('''
+        CREATE TABLE transactions (
+          id TEXT PRIMARY KEY,
+          amount REAL NOT NULL,
+          type TEXT NOT NULL,
+          category_id TEXT,
+          date TEXT NOT NULL,
+          note TEXT,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+        )
+      ''');
+      await db.execute('''
+        INSERT INTO transactions (id, amount, type, category_id, date, note, created_at)
+        SELECT id, amount, type, category_id, date, note, created_at FROM _transactions_old;
+      ''');
+      await db.execute('DROP TABLE _transactions_old;');
+      await db.execute('PRAGMA foreign_keys = ON;');
+
+      // Re-create indexes
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_transactions_date_created ON transactions(date DESC, created_at DESC);');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_transactions_date_type_amount ON transactions(date, type, amount);');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_transactions_type_date_cat_amt ON transactions(type, date, category_id, amount);');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category_id);');
+    }
+  }
+
   Future<void> _onCreate(Database db, int version) async {
     // 1. Create categories table
     await db.execute('''
@@ -73,17 +106,17 @@ class AppDatabase {
       )
     ''');
 
-    // 2. Create transactions table
+    // 2. Create transactions table (category_id is nullable to support optional category assignment)
     await db.execute('''
       CREATE TABLE transactions (
         id TEXT PRIMARY KEY,
         amount REAL NOT NULL,
         type TEXT NOT NULL,
-        category_id TEXT NOT NULL,
+        category_id TEXT,
         date TEXT NOT NULL,
         note TEXT,
         created_at TEXT NOT NULL,
-        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
       )
     ''');
 

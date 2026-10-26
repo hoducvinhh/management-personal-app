@@ -20,8 +20,23 @@ class TransactionItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cat = transaction.category;
-    final catColor = cat?.color ?? AppColors.primary;
     final isIncome = transaction.isIncome;
+    final catColor = cat?.color ?? (isIncome ? AppColors.income : const Color(0xFF64748B));
+    final hasNote = transaction.note != null && transaction.note!.trim().isNotEmpty;
+
+    // Primary Title: What the expense was for ("Làm gì") takes precedence!
+    final titleText = hasNote
+        ? transaction.note!.trim()
+        : (cat?.name ?? (isIncome ? 'Khoản thu' : 'Khoản chi'));
+
+    // Subtitle: Category badge/name if chosen, or "Chưa phân loại"
+    final subtitleText = hasNote
+        ? (cat != null
+            ? '${cat.name} • ${AppDateUtils.formatRelativeDate(transaction.date)}'
+            : 'Chưa phân loại • ${AppDateUtils.formatRelativeDate(transaction.date)}')
+        : AppDateUtils.formatRelativeDate(transaction.date);
+
+    final badgeEmoji = cat?.emoji ?? (isIncome ? '💰' : '📝');
 
     return Dismissible(
       key: Key(transaction.id),
@@ -101,7 +116,7 @@ class TransactionItemTile extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    cat?.emoji ?? (isIncome ? '💰' : '💸'),
+                    badgeEmoji,
                     style: const TextStyle(fontSize: 20),
                   ),
                 ),
@@ -113,7 +128,7 @@ class TransactionItemTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      cat?.name ?? (isIncome ? 'Thu nhập' : 'Chi tiêu'),
+                      titleText,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -123,9 +138,7 @@ class TransactionItemTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      (transaction.note != null && transaction.note!.trim().isNotEmpty)
-                          ? transaction.note!
-                          : AppDateUtils.formatRelativeDate(transaction.date),
+                      subtitleText,
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark

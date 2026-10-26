@@ -78,8 +78,12 @@ class TransactionRepository {
       whereArgs.add(type);
     }
     if (categoryId != null && categoryId.isNotEmpty && categoryId != 'ALL') {
-      whereClauses.add('t.category_id = ?');
-      whereArgs.add(categoryId);
+      if (categoryId == 'UNCATEGORIZED') {
+        whereClauses.add('(t.category_id IS NULL OR t.category_id = \'\')');
+      } else {
+        whereClauses.add('t.category_id = ?');
+        whereArgs.add(categoryId);
+      }
     }
     if (searchQuery != null && searchQuery.trim().isNotEmpty) {
       final q = '%${searchQuery.trim()}%';
@@ -151,12 +155,17 @@ class TransactionRepository {
     final db = await _dbHelper.database;
     final query = '''
       SELECT 
-        c.id, c.name, c.type, c.icon_code, c.color_hex, c.is_default,
+        COALESCE(c.id, 'uncategorized') as id,
+        COALESCE(c.name, 'Chưa phân loại') as name,
+        COALESCE(c.type, 'EXPENSE') as type,
+        COALESCE(c.icon_code, 'inventory_2') as icon_code,
+        COALESCE(c.color_hex, '#94A3B8') as color_hex,
+        COALESCE(c.is_default, 0) as is_default,
         SUM(t.amount) as total
       FROM transactions t
-      JOIN categories c ON t.category_id = c.id
+      LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.type = 'EXPENSE' AND t.date >= ? AND t.date <= ?
-      GROUP BY c.id
+      GROUP BY COALESCE(c.id, 'uncategorized')
       ORDER BY total DESC
     ''';
 

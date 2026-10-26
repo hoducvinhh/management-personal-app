@@ -59,39 +59,38 @@ class _MainScreenState extends State<MainScreen> {
           notchMargin: 8,
           color: isDark ? AppColors.darkSurface : Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Left pair
-              Row(
-                children: [
-                  _buildNavItem(
-                    index: 0,
-                    icon: Icons.grid_view_rounded,
-                    label: 'Tổng quan',
-                  ),
-                  _buildNavItem(
-                    index: 1,
-                    icon: Icons.receipt_long_rounded,
-                    label: 'Lịch sử',
-                  ),
-                ],
+              Expanded(
+                child: _buildNavItem(
+                  index: 0,
+                  icon: Icons.grid_view_rounded,
+                  label: 'Tổng quan',
+                ),
               ),
-              // Right pair
-              Row(
-                children: [
-                  _buildNavItem(
-                    index: 2,
-                    icon: Icons.account_balance_wallet_rounded,
-                    label: 'Ngân sách',
-                  ),
-                  _buildNavItem(
-                    index: 3,
-                    icon: Icons.pie_chart_rounded,
-                    label: 'Thống kê',
-                  ),
-                ],
+              Expanded(
+                child: _buildNavItem(
+                  index: 1,
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Lịch sử',
+                ),
+              ),
+              // Space for center docked FAB notch
+              const SizedBox(width: 54),
+              Expanded(
+                child: _buildNavItem(
+                  index: 2,
+                  icon: Icons.account_balance_wallet_rounded,
+                  label: 'Ngân sách',
+                ),
+              ),
+              Expanded(
+                child: _buildNavItem(
+                  index: 3,
+                  icon: Icons.pie_chart_rounded,
+                  label: 'Thống kê',
+                ),
               ),
             ],
           ),
@@ -120,7 +119,7 @@ class _MainScreenState extends State<MainScreen> {
       },
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -130,12 +129,15 @@ class _MainScreenState extends State<MainScreen> {
               size: 22,
             ),
             const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: color,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: color,
+                ),
               ),
             ),
           ],

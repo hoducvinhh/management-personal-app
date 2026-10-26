@@ -28,10 +28,10 @@ class MonthlyBarChart extends StatelessWidget {
     final maxY = maxAmount * 1.25;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isDark ? AppColors.darkSurfaceLight : const Color(0xFFE2E8F0),
         ),
@@ -49,23 +49,29 @@ class MonthlyBarChart extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'So sánh Thu - Chi 6 tháng',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              const Flexible(
+                child: Text(
+                  'So sánh Thu - Chi 6 tháng',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
               // Legend
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildLegendIndicator(AppColors.income, 'Thu'),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   _buildLegendIndicator(AppColors.expense, 'Chi'),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Bar Chart
+          // Bar Chart with fitInsideHorizontally / Vertically
           SizedBox(
             height: 220,
             child: BarChart(
@@ -78,7 +84,9 @@ class MonthlyBarChart extends StatelessWidget {
                         ? const Color(0xFF1E293B)
                         : const Color(0xFF0F172A),
                     tooltipBorderRadius: BorderRadius.circular(12),
-                    tooltipPadding: const EdgeInsets.all(12),
+                    tooltipPadding: const EdgeInsets.all(10),
+                    fitInsideHorizontally: true,
+                    fitInsideVertically: true,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       final item = trends[group.x.toInt()];
                       return BarTooltipItem(
@@ -86,7 +94,7 @@ class MonthlyBarChart extends StatelessWidget {
                         const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 12,
                         ),
                         children: [
                           TextSpan(
@@ -110,7 +118,7 @@ class MonthlyBarChart extends StatelessWidget {
                                 '💎 Dư: ${CurrencyUtils.formatSigned(item.savings, item.savings >= 0 ? "INCOME" : "EXPENSE")}',
                             style: const TextStyle(
                               color: Colors.white70,
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -130,16 +138,19 @@ class MonthlyBarChart extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 42,
+                      reservedSize: 44,
                       getTitlesWidget: (value, meta) {
                         if (value == 0) return const SizedBox.shrink();
                         if (value == meta.max) return const SizedBox.shrink();
-                        return Text(
-                          CurrencyUtils.formatCompact(value),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: isDark ? Colors.white54 : Colors.black45,
-                            fontWeight: FontWeight.w500,
+                        return FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            CurrencyUtils.formatCompact(value),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isDark ? Colors.white54 : Colors.black45,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         );
                       },
@@ -189,9 +200,9 @@ class MonthlyBarChart extends StatelessWidget {
                       // Thu (Income) Bar
                       BarChartRodData(
                         toY: t.income,
-                        width: 10,
+                        width: 9,
                         borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(6),
+                          top: Radius.circular(5),
                         ),
                         gradient: const LinearGradient(
                           colors: [
@@ -205,9 +216,9 @@ class MonthlyBarChart extends StatelessWidget {
                       // Chi (Expense) Bar
                       BarChartRodData(
                         toY: t.expense,
-                        width: 10,
+                        width: 9,
                         borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(6),
+                          top: Radius.circular(5),
                         ),
                         gradient: const LinearGradient(
                           colors: [

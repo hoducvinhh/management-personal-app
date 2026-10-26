@@ -27,7 +27,7 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
 
     if (widget.items.isEmpty || widget.totalExpense <= 0) {
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(28),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -55,7 +55,7 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
       );
     }
 
-    // Prepare chart items: auto-group < 3% into "Khác" if there are many items (> 5)
+    // Auto-group < 3% into "Khác" if there are > 5 items
     final displayItems = <_ChartSegment>[];
     double othersTotal = 0.0;
     double othersPercent = 0.0;
@@ -92,10 +92,10 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
         : null;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isDark ? AppColors.darkSurfaceLight : const Color(0xFFE2E8F0),
         ),
@@ -114,7 +114,7 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
             'Cơ cấu chi tiêu',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           // Donut Chart with Center Information
           SizedBox(
@@ -144,7 +144,7 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
                     sections: List.generate(displayItems.length, (i) {
                       final isTouched = i == _touchedIndex;
                       final seg = displayItems[i];
-                      final radius = isTouched ? 48.0 : 38.0;
+                      final radius = isTouched ? 46.0 : 36.0;
 
                       return PieChartSectionData(
                         color: seg.color,
@@ -162,87 +162,98 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
                     }),
                   ),
                 ),
-                // Center information widget
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (touchedSegment != null) ...[
-                      Text(
-                        touchedSegment.emoji,
-                        style: const TextStyle(fontSize: 22),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        touchedSegment.name,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                // Center information widget (Constrained width with FittedBox)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (touchedSegment != null) ...[
+                        Text(
+                          touchedSegment.emoji,
+                          style: const TextStyle(fontSize: 20),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        CurrencyUtils.format(touchedSegment.amount),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: touchedSegment.color,
+                        const SizedBox(height: 2),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            touchedSegment.name,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '${touchedSegment.percentage.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            CurrencyUtils.format(touchedSegment.amount),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: touchedSegment.color,
+                            ),
+                          ),
                         ),
-                      ),
-                    ] else ...[
-                      const Text(
-                        'Tổng chi tháng',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey,
+                        Text(
+                          '${touchedSegment.percentage.toStringAsFixed(1)}%',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        CurrencyUtils.format(widget.totalExpense),
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.expense,
+                      ] else ...[
+                        const Text(
+                          'Tổng chi tháng',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Chạm để xem',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey,
+                        const SizedBox(height: 2),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            CurrencyUtils.format(widget.totalExpense),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.expense,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Chạm để xem',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           // Legend Cards ranked from highest to lowest
           const Text(
             'Bảng xếp hạng chi tiêu',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           Column(
             children: widget.items.map((item) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: isDark
                         ? AppColors.darkBackground
@@ -259,8 +270,8 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
                       Row(
                         children: [
                           Container(
-                            width: 32,
-                            height: 32,
+                            width: 30,
+                            height: 30,
                             decoration: BoxDecoration(
                               color: item.category.color.withValues(
                                   alpha: isDark ? 0.25 : 0.15),
@@ -269,11 +280,11 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
                             child: Center(
                               child: Text(
                                 item.category.emoji,
-                                style: const TextStyle(fontSize: 16),
+                                style: const TextStyle(fontSize: 15),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               item.category.name,
@@ -281,32 +292,38 @@ class _ExpenseDonutChartState extends State<ExpenseDonutChart> {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Text(
-                            CurrencyUtils.format(item.totalAmount),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+                          const SizedBox(width: 6),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              CurrencyUtils.format(item.totalAmount),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Text(
                             '${item.percentage.toStringAsFixed(1)}%',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: item.category.color,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: (item.percentage / 100).clamp(0.0, 1.0),
-                          minHeight: 5,
+                          minHeight: 4,
                           backgroundColor: isDark
                               ? Colors.white.withValues(alpha: 0.05)
                               : const Color(0xFFE2E8F0),

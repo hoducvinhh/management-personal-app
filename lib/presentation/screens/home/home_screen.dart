@@ -37,17 +37,17 @@ class HomeScreen extends ConsumerWidget {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // 1. App Header with greeting and month switcher
+              // 1. App Header with greeting and month switcher (100% responsive, zero overflow)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         greeting,
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey,
                         ),
@@ -56,36 +56,54 @@ class HomeScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'Quản lý chi tiêu',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.3,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                const Flexible(
+                                  child: Text(
+                                    'Quản lý chi tiêu',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: -0.3,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              IconButton(
-                                icon: Icon(
-                                  isDark
-                                      ? Icons.light_mode_rounded
-                                      : Icons.dark_mode_rounded,
-                                  size: 20,
-                                  color: isDark ? Colors.amber : AppColors.primary,
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 32,
+                                  ),
+                                  icon: Icon(
+                                    isDark
+                                        ? Icons.light_mode_rounded
+                                        : Icons.dark_mode_rounded,
+                                    size: 20,
+                                    color: isDark
+                                        ? Colors.amber
+                                        : AppColors.primary,
+                                  ),
+                                  tooltip: isDark
+                                      ? 'Chế độ sáng'
+                                      : 'Chế độ tối',
+                                  onPressed: () {
+                                    ref
+                                        .read(themeModeProvider.notifier)
+                                        .toggle();
+                                  },
                                 ),
-                                tooltip: isDark ? 'Chế độ sáng' : 'Chế độ tối',
-                                onPressed: () {
-                                  ref.read(themeModeProvider.notifier).toggle();
-                                },
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 6),
                           // Month Selector with < >
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
+                              horizontal: 4,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
@@ -103,12 +121,12 @@ class HomeScreen extends ConsumerWidget {
                                 IconButton(
                                   icon: const Icon(
                                     Icons.chevron_left_rounded,
-                                    size: 20,
+                                    size: 18,
                                   ),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(
-                                    minWidth: 30,
-                                    minHeight: 30,
+                                    minWidth: 26,
+                                    minHeight: 26,
                                   ),
                                   onPressed: () {
                                     ref
@@ -118,11 +136,11 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                                 Padding(
                                   padding:
-                                      const EdgeInsets.symmetric(horizontal: 6),
+                                      const EdgeInsets.symmetric(horizontal: 4),
                                   child: Text(
                                     monthLabel,
                                     style: const TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -130,12 +148,12 @@ class HomeScreen extends ConsumerWidget {
                                 IconButton(
                                   icon: const Icon(
                                     Icons.chevron_right_rounded,
-                                    size: 20,
+                                    size: 18,
                                   ),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(
-                                    minWidth: 30,
-                                    minHeight: 30,
+                                    minWidth: 26,
+                                    minHeight: 26,
                                   ),
                                   onPressed: () {
                                     ref
@@ -156,7 +174,7 @@ class HomeScreen extends ConsumerWidget {
               // 2. Hero Card (Số dư, tổng thu, tổng chi)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   child: summaryAsync.when(
                     data: (summary) => BalanceHeroCard(summary: summary),
                     loading: () => Container(
@@ -180,7 +198,7 @@ class HomeScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   child: overallBudgetAsync.when(
                     data: (budget) => MiniBudgetGauge(
                       overallBudget: budget,
@@ -201,7 +219,7 @@ class HomeScreen extends ConsumerWidget {
               // 4. Section Title: "Giao dịch gần đây"
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -249,8 +267,8 @@ class HomeScreen extends ConsumerWidget {
                     return SliverToBoxAdapter(
                       child: Container(
                         margin: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 20),
-                        padding: const EdgeInsets.all(32),
+                            horizontal: 16, vertical: 16),
+                        padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardTheme.color,
                           borderRadius: BorderRadius.circular(20),
@@ -299,7 +317,6 @@ class HomeScreen extends ConsumerWidget {
                     );
                   }
 
-                  // Group transactions by date string
                   final grouped = <String, List<TransactionModel>>{};
                   for (final tx in transactions) {
                     final dateKey = AppDateUtils.formatRelativeDate(tx.date);
@@ -309,7 +326,7 @@ class HomeScreen extends ConsumerWidget {
                   final dateKeys = grouped.keys.toList();
 
                   return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, groupIndex) {
@@ -321,7 +338,7 @@ class HomeScreen extends ConsumerWidget {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.only(
-                                  top: 12,
+                                  top: 10,
                                   bottom: 6,
                                   left: 4,
                                 ),

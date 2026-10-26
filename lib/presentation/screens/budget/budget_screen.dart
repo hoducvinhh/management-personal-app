@@ -24,12 +24,15 @@ class BudgetScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hạn mức ngân sách'),
+        title: const Text(
+          'Hạn mức ngân sách',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         actions: [
           // Month Selector
           Container(
             margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
               color: Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(20),
@@ -70,7 +73,7 @@ class BudgetScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -93,7 +96,7 @@ class BudgetScreen extends ConsumerWidget {
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: isDark ? AppColors.darkSurface : Colors.white,
                           borderRadius: BorderRadius.circular(20),
@@ -107,7 +110,7 @@ class BudgetScreen extends ConsumerWidget {
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withValues(alpha: 0.12),
                                 shape: BoxShape.circle,
@@ -115,10 +118,10 @@ class BudgetScreen extends ConsumerWidget {
                               child: const Icon(
                                 Icons.add_circle_outline_rounded,
                                 color: AppColors.primary,
-                                size: 28,
+                                size: 24,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 14),
                             const Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +129,7 @@ class BudgetScreen extends ConsumerWidget {
                                   Text(
                                     'Thiết lập ngân sách tổng tháng',
                                     style: TextStyle(
-                                      fontSize: 15,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -134,7 +137,7 @@ class BudgetScreen extends ConsumerWidget {
                                   Text(
                                     'Đặt hạn mức để nhận cảnh báo khi gần chạm hoặc vượt trần chi tiêu.',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: Colors.grey,
                                     ),
                                   ),
@@ -158,7 +161,7 @@ class BudgetScreen extends ConsumerWidget {
                 error: (err, _) => Text('Lỗi: $err'),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // 2. Category Budgets Section
               Row(
@@ -194,7 +197,7 @@ class BudgetScreen extends ConsumerWidget {
                 data: (budgets) {
                   if (budgets.isEmpty) {
                     return Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(22),
                       decoration: BoxDecoration(
                         color: isDark ? AppColors.darkSurface : Colors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -207,8 +210,8 @@ class BudgetScreen extends ConsumerWidget {
                       child: Center(
                         child: Column(
                           children: [
-                            const Text('🎯', style: TextStyle(fontSize: 36)),
-                            const SizedBox(height: 10),
+                            const Text('🎯', style: TextStyle(fontSize: 34)),
+                            const SizedBox(height: 8),
                             const Text(
                               'Chưa có ngân sách danh mục',
                               style: TextStyle(
@@ -222,7 +225,7 @@ class BudgetScreen extends ConsumerWidget {
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 12, color: Colors.grey),
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 12),
                             FilledButton.tonalIcon(
                               onPressed: () {
                                 SetBudgetDialog.show(
@@ -288,7 +291,7 @@ class BudgetScreen extends ConsumerWidget {
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -313,8 +316,8 @@ class BudgetScreen extends ConsumerWidget {
             Row(
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: (cat?.color ?? AppColors.primary)
                         .withValues(alpha: isDark ? 0.25 : 0.15),
@@ -323,11 +326,11 @@ class BudgetScreen extends ConsumerWidget {
                   child: Center(
                     child: Text(
                       isOverall ? '💳' : (cat?.emoji ?? '🏷️'),
-                      style: const TextStyle(fontSize: 18),
+                      style: const TextStyle(fontSize: 17),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,23 +340,28 @@ class BudgetScreen extends ConsumerWidget {
                             ? 'Tổng chi tiêu tháng'
                             : (cat?.name ?? 'Danh mục'),
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         'Hạn mức: ${CurrencyUtils.format(budget.limitAmount)}',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           color: Colors.grey,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 6),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -369,38 +377,48 @@ class BudgetScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
 
             // Progress Bar
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: LinearProgressIndicator(
                 value: percent.clamp(0.0, 1.0),
-                minHeight: 8,
+                minHeight: 7,
                 backgroundColor: isDark
                     ? Colors.white.withValues(alpha: 0.08)
                     : const Color(0xFFF1F5F9),
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
-            // Amounts Row
+            // Amounts Row with Flexible to guarantee zero overflow
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Đã chi: ${CurrencyUtils.format(budget.spentAmount)}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                Flexible(
+                  child: Text(
+                    'Đã chi: ${CurrencyUtils.format(budget.spentAmount)}',
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                Text(
-                  budget.isOverBudget
-                      ? 'Vượt: ${CurrencyUtils.format(budget.spentAmount - budget.limitAmount)}'
-                      : 'Còn lại: ${CurrencyUtils.format(budget.remainingAmount)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: budget.isOverBudget ? AppColors.budgetDanger : color,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    budget.isOverBudget
+                        ? 'Vượt: ${CurrencyUtils.format(budget.spentAmount - budget.limitAmount)}'
+                        : 'Còn lại: ${CurrencyUtils.format(budget.remainingAmount)}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: budget.isOverBudget ? AppColors.budgetDanger : color,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
                   ),
                 ),
               ],
@@ -434,6 +452,8 @@ class BudgetScreen extends ConsumerWidget {
                         fontWeight: FontWeight.w600,
                         color: color,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
