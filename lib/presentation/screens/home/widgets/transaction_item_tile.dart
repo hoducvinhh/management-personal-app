@@ -29,13 +29,6 @@ class TransactionItemTile extends StatelessWidget {
         ? transaction.note!.trim()
         : (cat?.name ?? (isIncome ? 'Khoản thu' : 'Khoản chi'));
 
-    // Subtitle: Category badge/name if chosen, or "Chưa phân loại"
-    final subtitleText = hasNote
-        ? (cat != null
-            ? '${cat.name} • ${AppDateUtils.formatRelativeDate(transaction.date)}'
-            : 'Chưa phân loại • ${AppDateUtils.formatRelativeDate(transaction.date)}')
-        : AppDateUtils.formatRelativeDate(transaction.date);
-
     final badgeEmoji = cat?.emoji ?? (isIncome ? '💰' : '📝');
 
     return Dismissible(

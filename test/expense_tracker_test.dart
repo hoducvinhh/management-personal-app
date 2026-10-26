@@ -114,7 +114,7 @@ void main() {
           id TEXT PRIMARY KEY,
           amount REAL NOT NULL,
           type TEXT NOT NULL,
-          category_id TEXT NOT NULL,
+          category_id TEXT,
           date TEXT NOT NULL,
           note TEXT,
           created_at TEXT NOT NULL

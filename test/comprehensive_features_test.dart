@@ -158,7 +158,7 @@ void main() {
           id TEXT PRIMARY KEY,
           amount REAL NOT NULL,
           type TEXT NOT NULL,
-          category_id TEXT NOT NULL,
+          category_id TEXT,
           date TEXT NOT NULL,
           note TEXT,
           created_at TEXT NOT NULL
@@ -357,7 +357,7 @@ void main() {
           id TEXT PRIMARY KEY,
           amount REAL NOT NULL,
           type TEXT NOT NULL,
-          category_id TEXT NOT NULL,
+          category_id TEXT,
           date TEXT NOT NULL,
           note TEXT,
           created_at TEXT NOT NULL
@@ -607,6 +607,30 @@ void main() {
       expect(find.text('Ăn uống'), findsOneWidget);
       expect(find.text('Bánh mì pate sáng'), findsOneWidget);
       expect(find.text(CurrencyUtils.formatSigned(35000, 'EXPENSE')), findsOneWidget);
+    });
+
+    testWidgets('TransactionItemTile hiển thị đúng khi không gán danh mục (chỉ ghi làm gì)', (tester) async {
+      final tx = TransactionModel(
+        id: 'tx_tile_uncat',
+        amount: 20000,
+        type: 'EXPENSE',
+        categoryId: null,
+        date: DateTime.now(),
+        note: 'Gửi xe bệnh viện',
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TransactionItemTile(transaction: tx),
+          ),
+        ),
+      );
+
+      expect(find.text('Gửi xe bệnh viện'), findsOneWidget);
+      expect(find.text('Chưa phân loại'), findsOneWidget);
+      expect(find.text(CurrencyUtils.formatSigned(20000, 'EXPENSE')), findsOneWidget);
     });
 
     testWidgets('SmartInsightsCard hiển thị nhận định thông minh tiếng Việt', (tester) async {
