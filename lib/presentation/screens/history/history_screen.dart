@@ -218,6 +218,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         isSelected: filter.categoryId == 'ALL',
                         onSelected: () => filterNotifier.setCategoryId('ALL'),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 6),
+                        child: _buildFilterChip(
+                          label: '📝 Chưa phân loại',
+                          isSelected: filter.categoryId == 'UNCATEGORIZED',
+                          selectedColor: const Color(0xFF64748B),
+                          onSelected: () =>
+                              filterNotifier.setCategoryId('UNCATEGORIZED'),
+                        ),
+                      ),
                       ...categories.map((c) {
                         final isSelected = filter.categoryId == c.id;
                         return Padding(
