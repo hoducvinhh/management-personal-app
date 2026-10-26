@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SelectedMonthNotifier extends StateNotifier<DateTime> {
-  SelectedMonthNotifier()
-      : super(DateTime(DateTime.now().year, DateTime.now().month, 1));
+class SelectedMonthNotifier extends Notifier<DateTime> {
+  @override
+  DateTime build() =>
+      DateTime(DateTime.now().year, DateTime.now().month, 1);
 
   void nextMonth() {
     state = DateTime(state.year, state.month + 1, 1);
@@ -18,6 +19,5 @@ class SelectedMonthNotifier extends StateNotifier<DateTime> {
 }
 
 final selectedMonthProvider =
-    StateNotifierProvider<SelectedMonthNotifier, DateTime>((ref) {
-  return SelectedMonthNotifier();
-});
+    NotifierProvider<SelectedMonthNotifier, DateTime>(
+        SelectedMonthNotifier.new);
