@@ -6,34 +6,23 @@ final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   return CategoryRepository();
 });
 
-class CategoriesNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> {
-  final CategoryRepository _repository;
-
-  CategoriesNotifier(this._repository) : super(const AsyncValue.loading()) {
-    loadCategories();
-  }
-
-  Future<void> loadCategories() async {
-    try {
-      state = const AsyncValue.loading();
-      final categories = await _repository.getCategories();
-      state = AsyncValue.data(categories);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+class CategoriesNotifier extends AsyncNotifier<List<CategoryModel>> {
+  @override
+  Future<List<CategoryModel>> build() async {
+    final repo = ref.watch(categoryRepositoryProvider);
+    return repo.getCategories();
   }
 
   Future<void> addCategory(CategoryModel category) async {
-    await _repository.insertCategory(category);
-    await loadCategories();
+    final repo = ref.read(categoryRepositoryProvider);
+    await repo.insertCategory(category);
+    ref.invalidateSelf();
   }
 }
 
-final categoriesProvider = StateNotifierProvider<CategoriesNotifier,
-    AsyncValue<List<CategoryModel>>>((ref) {
-  final repo = ref.watch(categoryRepositoryProvider);
-  return CategoriesNotifier(repo);
-});
+final categoriesProvider =
+    AsyncNotifierProvider<CategoriesNotifier, List<CategoryModel>>(
+        CategoriesNotifier.new);
 
 final expenseCategoriesProvider = Provider<List<CategoryModel>>((ref) {
   final asyncCategories = ref.watch(categoriesProvider);
