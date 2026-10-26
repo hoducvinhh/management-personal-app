@@ -269,6 +269,33 @@ void main() {
       expect(await txRepo.getTransactionById(txId), isNull);
     });
 
+    test('Khoản chi tiêu tự do không cần gán danh mục (chỉ cần ghi mục đích làm gì)', () async {
+      final now = DateTime.now();
+      final txId = uuid.v4();
+
+      // Giao dịch không bắt buộc chọn danh mục
+      await txRepo.insertTransaction(TransactionModel(
+        id: txId,
+        amount: 85000,
+        type: 'EXPENSE',
+        categoryId: null, // Không gán danh mục cố định
+        date: now,
+        note: 'Tiền sửa xe máy thay nhớt',
+        createdAt: now,
+      ));
+
+      final fetched = await txRepo.getTransactionById(txId);
+      expect(fetched, isNotNull);
+      expect(fetched!.amount, 85000);
+      expect(fetched.categoryId, isNull);
+      expect(fetched.hasCategory, isFalse);
+      expect(fetched.note, 'Tiền sửa xe máy thay nhớt');
+
+      // Lọc giao dịch chưa phân loại
+      final uncatList = await txRepo.getTransactions(categoryId: 'UNCATEGORIZED');
+      expect(uncatList.any((tx) => tx.id == txId), isTrue);
+    });
+
     test('Tìm kiếm theo ghi chú, danh mục và số tiền', () async {
       final now = DateTime.now();
 
