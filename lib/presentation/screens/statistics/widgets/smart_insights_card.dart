@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../providers/statistics_provider.dart';
+import '../../../providers/statistics_provider.dart';
 
 class SmartInsightsCard extends StatelessWidget {
   final SmartInsights insights;

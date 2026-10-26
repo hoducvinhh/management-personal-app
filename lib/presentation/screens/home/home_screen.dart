@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../data/repositories/transaction_repository.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/selected_month_provider.dart';
 import '../../providers/transactions_provider.dart';
@@ -148,7 +149,7 @@ class HomeScreen extends ConsumerWidget {
                         child: CircularProgressIndicator(),
                       ),
                     ),
-                    error: (_, __) => BalanceHeroCard(
+                    error: (_, _) => BalanceHeroCard(
                       summary: MonthlySummary.zero(),
                     ),
                   ),
@@ -172,7 +173,7 @@ class HomeScreen extends ConsumerWidget {
                       },
                     ),
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                   ),
                 ),
               ),
@@ -193,7 +194,6 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Switch to History tab if needed, or open quick add
                           QuickTransactionSheet.show(context);
                         },
                         style: TextButton.styleFrom(
