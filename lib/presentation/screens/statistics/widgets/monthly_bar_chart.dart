@@ -77,7 +77,7 @@ class MonthlyBarChart extends StatelessWidget {
                     getTooltipColor: (_) => isDark
                         ? const Color(0xFF1E293B)
                         : const Color(0xFF0F172A),
-                    tooltipRoundedRadius: 12,
+                    tooltipBorderRadius: BorderRadius.circular(12),
                     tooltipPadding: const EdgeInsets.all(12),
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       final item = trends[group.x.toInt()];
