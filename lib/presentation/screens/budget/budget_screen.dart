@@ -111,13 +111,17 @@ class BudgetScreen extends ConsumerWidget {
                           children: [
                             Container(
                               padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.12),
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
-                                Icons.add_circle_outline_rounded,
-                                color: AppColors.primary,
+                                Icons.add_rounded,
+                                color: Colors.white,
                                 size: 24,
                               ),
                             ),
@@ -319,8 +323,17 @@ class BudgetScreen extends ConsumerWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: (cat?.color ?? AppColors.primary)
-                        .withValues(alpha: isDark ? 0.25 : 0.15),
+                    gradient: isOverall
+                        ? const LinearGradient(
+                            colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                    color: isOverall
+                        ? null
+                        : (cat?.color ?? AppColors.tabBudget)
+                            .withValues(alpha: isDark ? 0.25 : 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Center(

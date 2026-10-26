@@ -84,8 +84,8 @@ class HomeScreen extends ConsumerWidget {
                                         : Icons.dark_mode_rounded,
                                     size: 20,
                                     color: isDark
-                                        ? Colors.amber
-                                        : AppColors.primary,
+                                        ? const Color(0xFFFBBF24)
+                                        : const Color(0xFFF59E0B),
                                   ),
                                   tooltip: isDark
                                       ? 'Chế độ sáng'
@@ -242,13 +242,13 @@ class HomeScreen extends ConsumerWidget {
                         child: const Row(
                           children: [
                             Icon(Icons.add_circle_outline_rounded,
-                                size: 16, color: AppColors.primary),
+                                size: 16, color: AppColors.tabOverview),
                             SizedBox(width: 4),
                             Text(
                               'Thêm mới',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: AppColors.primary,
+                                color: AppColors.tabOverview,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
