@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../data/models/transaction_model.dart';
 import '../../../data/repositories/transaction_repository.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/selected_month_provider.dart';
@@ -24,6 +25,7 @@ class HomeScreen extends ConsumerWidget {
 
     final monthLabel = AppDateUtils.formatMonthYearVi(selectedMonth);
     final greeting = AppDateUtils.getGreeting();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: SafeArea(
@@ -71,8 +73,7 @@ class HomeScreen extends ConsumerWidget {
                               color: Theme.of(context).cardTheme.color,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
+                                color: isDark
                                     ? AppColors.darkSurfaceLight
                                     : const Color(0xFFE2E8F0),
                               ),
@@ -222,7 +223,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
 
-              // 5. Recent Transactions List
+              // 5. Recent Transactions List (Grouped by Date)
               recentTxAsync.when(
                 data: (transactions) {
                   if (transactions.isEmpty) {
@@ -235,8 +236,7 @@ class HomeScreen extends ConsumerWidget {
                           color: Theme.of(context).cardTheme.color,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Theme.of(context).brightness ==
-                                    Brightness.dark
+                            color: isDark
                                 ? AppColors.darkSurfaceLight
                                 : const Color(0xFFE2E8F0),
                           ),
@@ -280,31 +280,67 @@ class HomeScreen extends ConsumerWidget {
                     );
                   }
 
+                  // Group transactions by date string
+                  final grouped = <String, List<TransactionModel>>{};
+                  for (final tx in transactions) {
+                    final dateKey = AppDateUtils.formatRelativeDate(tx.date);
+                    grouped.putIfAbsent(dateKey, () => []).add(tx);
+                  }
+
+                  final dateKeys = grouped.keys.toList();
+
                   return SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final tx = transactions[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: TransactionItemTile(
-                              transaction: tx,
-                              onTap: () {
-                                QuickTransactionSheet.show(
-                                  context,
-                                  editTransaction: tx,
+                        (context, groupIndex) {
+                          final dateKey = dateKeys[groupIndex];
+                          final groupItems = grouped[dateKey]!;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 12,
+                                  bottom: 6,
+                                  left: 4,
+                                ),
+                                child: Text(
+                                  dateKey,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.lightTextSecondary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                              ...groupItems.map((tx) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: TransactionItemTile(
+                                    transaction: tx,
+                                    onTap: () {
+                                      QuickTransactionSheet.show(
+                                        context,
+                                        editTransaction: tx,
+                                      );
+                                    },
+                                    onDelete: () {
+                                      ref
+                                          .read(transactionActionsProvider)
+                                          .deleteTransaction(tx.id);
+                                    },
+                                  ),
                                 );
-                              },
-                              onDelete: () {
-                                ref
-                                    .read(transactionActionsProvider)
-                                    .deleteTransaction(tx.id);
-                              },
-                            ),
+                              }),
+                            ],
                           );
                         },
-                        childCount: transactions.length,
+                        childCount: dateKeys.length,
                       ),
                     ),
                   );

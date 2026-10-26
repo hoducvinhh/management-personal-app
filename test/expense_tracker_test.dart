@@ -5,7 +5,6 @@ import 'package:personal_expense_tracker/core/utils/currency_utils.dart';
 import 'package:personal_expense_tracker/core/utils/date_utils.dart';
 import 'package:personal_expense_tracker/data/models/budget_model.dart';
 import 'package:personal_expense_tracker/data/models/transaction_model.dart';
-import 'package:personal_expense_tracker/data/repositories/budget_repository.dart';
 import 'package:personal_expense_tracker/data/repositories/category_repository.dart';
 import 'package:personal_expense_tracker/data/repositories/transaction_repository.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';

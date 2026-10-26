@@ -51,18 +51,22 @@ final recentTransactionsProvider =
 });
 
 // Filter state for history screen
-enum HistoryTimeRange { thisMonth, lastMonth, today, all }
+enum HistoryTimeRange { thisMonth, lastMonth, today, customRange, all }
 
 class HistoryFilterState {
   final String type; // 'ALL', 'EXPENSE', 'INCOME'
   final String categoryId; // 'ALL' or specific category id
   final HistoryTimeRange timeRange;
+  final DateTime? customStartDate;
+  final DateTime? customEndDate;
   final String searchQuery;
 
   const HistoryFilterState({
     this.type = 'ALL',
     this.categoryId = 'ALL',
     this.timeRange = HistoryTimeRange.thisMonth,
+    this.customStartDate,
+    this.customEndDate,
     this.searchQuery = '',
   });
 
@@ -70,12 +74,16 @@ class HistoryFilterState {
     String? type,
     String? categoryId,
     HistoryTimeRange? timeRange,
+    DateTime? customStartDate,
+    DateTime? customEndDate,
     String? searchQuery,
   }) {
     return HistoryFilterState(
       type: type ?? this.type,
       categoryId: categoryId ?? this.categoryId,
       timeRange: timeRange ?? this.timeRange,
+      customStartDate: customStartDate ?? this.customStartDate,
+      customEndDate: customEndDate ?? this.customEndDate,
       searchQuery: searchQuery ?? this.searchQuery,
     );
   }
@@ -89,6 +97,11 @@ class HistoryFilterNotifier extends Notifier<HistoryFilterState> {
   void setCategoryId(String catId) => state = state.copyWith(categoryId: catId);
   void setTimeRange(HistoryTimeRange range) =>
       state = state.copyWith(timeRange: range);
+  void setCustomRange(DateTime start, DateTime end) => state = state.copyWith(
+        timeRange: HistoryTimeRange.customRange,
+        customStartDate: start,
+        customEndDate: end,
+      );
   void setSearchQuery(String query) => state = state.copyWith(searchQuery: query);
   void reset() => state = const HistoryFilterState();
 }
@@ -123,6 +136,10 @@ final filteredTransactionsProvider =
     case HistoryTimeRange.today:
       startDate = DateTime(now.year, now.month, now.day);
       endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+      break;
+    case HistoryTimeRange.customRange:
+      startDate = filter.customStartDate;
+      endDate = filter.customEndDate;
       break;
     case HistoryTimeRange.all:
       startDate = null;

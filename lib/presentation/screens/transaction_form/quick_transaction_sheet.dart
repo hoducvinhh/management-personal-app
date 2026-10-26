@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
@@ -8,6 +9,7 @@ import '../../../core/utils/date_utils.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../providers/categories_provider.dart';
 import '../../providers/transactions_provider.dart';
+import '../../widgets/category/add_category_dialog.dart';
 
 class QuickTransactionSheet extends ConsumerStatefulWidget {
   final TransactionModel? editTransaction;
@@ -75,6 +77,7 @@ class _QuickTransactionSheetState
   }
 
   void _addQuickAmount(int add) {
+    HapticFeedback.lightImpact();
     setState(() {
       _amount += add;
       _amountController.text = CurrencyUtils.formatWithoutSymbol(_amount);
@@ -125,6 +128,7 @@ class _QuickTransactionSheetState
       return;
     }
 
+    HapticFeedback.lightImpact();
     final actions = ref.read(transactionActionsProvider);
 
     if (widget.editTransaction != null) {
@@ -165,7 +169,6 @@ class _QuickTransactionSheetState
         ? ref.watch(expenseCategoriesProvider)
         : ref.watch(incomeCategoriesProvider);
 
-    // Auto-select first category if none selected or switch types
     if (categories.isNotEmpty &&
         (_selectedCategoryId == null ||
             !categories.any((c) => c.id == _selectedCategoryId))) {
@@ -237,6 +240,7 @@ class _QuickTransactionSheetState
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
+                          HapticFeedback.selectionClick();
                           setState(() {
                             _type = 'EXPENSE';
                           });
@@ -276,6 +280,7 @@ class _QuickTransactionSheetState
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
+                          HapticFeedback.selectionClick();
                           setState(() {
                             _type = 'INCOME';
                           });
@@ -400,7 +405,7 @@ class _QuickTransactionSheetState
               ),
               const SizedBox(height: 18),
 
-              // 3. Lưới Chọn Danh Mục
+              // 3. Lưới Chọn Danh Mục + Nút Thêm Danh Mục Tùy Ý
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -411,11 +416,18 @@ class _QuickTransactionSheetState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    '${categories.length} danh mục',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(60, 24),
+                    ),
+                    onPressed: () {
+                      AddCategoryDialog.show(context, initialType: _type);
+                    },
+                    icon: const Icon(Icons.add_circle_outline_rounded, size: 15),
+                    label: const Text(
+                      'Tạo danh mục',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -426,7 +438,7 @@ class _QuickTransactionSheetState
                 height: 170,
                 child: GridView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
+                  itemCount: categories.length + 1,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 10,
@@ -434,10 +446,45 @@ class _QuickTransactionSheetState
                     childAspectRatio: 0.85,
                   ),
                   itemBuilder: (ctx, index) {
+                    if (index == categories.length) {
+                      // Add Category Tile
+                      return InkWell(
+                        onTap: () {
+                          AddCategoryDialog.show(context, initialType: _type);
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.darkBackground
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.grey.withValues(alpha: 0.4),
+                              style: BorderStyle.solid,
+                            ),
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_rounded, size: 26, color: Colors.grey),
+                              SizedBox(height: 4),
+                              Text(
+                                'Thêm mới',
+                                style: TextStyle(fontSize: 11, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
                     final cat = categories[index];
                     final isSelected = cat.id == _selectedCategoryId;
                     return InkWell(
                       onTap: () {
+                        HapticFeedback.selectionClick();
                         setState(() {
                           _selectedCategoryId = cat.id;
                         });
