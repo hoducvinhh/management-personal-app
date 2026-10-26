@@ -12,6 +12,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUpAll(() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -50,7 +52,7 @@ void main() {
         id: 'test_b1',
         monthKey: '2026-10',
         limitAmount: 1000000,
-        spentAmount: 600000, // 60%
+        spentAmount: 600000,
       );
 
       expect(budget.percentSpent, 0.6);
@@ -64,7 +66,7 @@ void main() {
         id: 'test_b2',
         monthKey: '2026-10',
         limitAmount: 1000000,
-        spentAmount: 850000, // 85%
+        spentAmount: 850000,
       );
 
       expect(budget.percentSpent, 0.85);
@@ -78,7 +80,7 @@ void main() {
         id: 'test_b3',
         monthKey: '2026-10',
         limitAmount: 1000000,
-        spentAmount: 1050000, // 105%
+        spentAmount: 1050000,
       );
 
       expect(budget.isOverBudget, true);
@@ -91,7 +93,6 @@ void main() {
     late Database testDb;
     late CategoryRepository catRepo;
     late TransactionRepository txRepo;
-    late BudgetRepository budgetRepo;
 
     setUp(() async {
       testDb = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
@@ -134,7 +135,6 @@ void main() {
       final mockAppDb = _MockAppDatabase(testDb);
       catRepo = CategoryRepository(mockAppDb);
       txRepo = TransactionRepository(mockAppDb);
-      budgetRepo = BudgetRepository(mockAppDb);
     });
 
     tearDown(() async {
