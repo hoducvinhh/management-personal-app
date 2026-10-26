@@ -5,7 +5,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
-import '../../../data/models/category_model.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../providers/categories_provider.dart';
 import '../../providers/transactions_provider.dart';
@@ -267,7 +266,7 @@ class _QuickTransactionSheetState
                                 fontWeight: FontWeight.bold,
                                 color: !_typeIsIncome
                                     ? Colors.white
-                                    : (isDark ? Colors.white70 : Colors.black84),
+                                    : (isDark ? Colors.white70 : Colors.black87),
                               ),
                             ),
                           ),
@@ -306,7 +305,7 @@ class _QuickTransactionSheetState
                                 fontWeight: FontWeight.bold,
                                 color: _typeIsIncome
                                     ? Colors.white
-                                    : (isDark ? Colors.white70 : Colors.black84),
+                                    : (isDark ? Colors.white70 : Colors.black87),
                               ),
                             ),
                           ),
