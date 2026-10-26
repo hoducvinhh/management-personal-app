@@ -15,11 +15,7 @@ void main() async {
     databaseFactory = databaseFactoryFfi;
   }
 
-  runApp(
-    const ProviderScope(
-      child: PersonalExpenseTrackerApp(),
-    ),
-  );
+  runApp(const PersonalExpenseTrackerApp());
 }
 
 class PersonalExpenseTrackerApp extends StatelessWidget {
@@ -27,13 +23,15 @@ class PersonalExpenseTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Quản Lý Chi Tiêu',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const MainScreen(),
+    return ProviderScope(
+      child: MaterialApp(
+        title: 'Quản Lý Chi Tiêu',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        home: const MainScreen(),
+      ),
     );
   }
 }
