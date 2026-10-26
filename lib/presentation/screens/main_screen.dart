@@ -32,15 +32,37 @@ class _MainScreenState extends State<MainScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => QuickTransactionSheet.show(context),
-        backgroundColor: AppColors.primary,
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: const Icon(
-          Icons.add_rounded,
-          size: 32,
-          color: Colors.white,
+      floatingActionButton: Container(
+        width: 58,
+        height: 58,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: AppColors.fabGradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.45),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => QuickTransactionSheet.show(context),
+            customBorder: const CircleBorder(),
+            child: const Center(
+              child: Icon(
+                Icons.add_rounded,
+                size: 34,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -107,8 +129,16 @@ class _MainScreenState extends State<MainScreen> {
     final isSelected = _currentIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Signature vibrant color for each tab
+    final tabColor = switch (index) {
+      0 => AppColors.tabOverview,
+      1 => AppColors.tabHistory,
+      2 => AppColors.tabBudget,
+      _ => AppColors.tabStats,
+    };
+
     final color = isSelected
-        ? AppColors.primary
+        ? tabColor
         : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary);
 
     return InkWell(
@@ -117,9 +147,14 @@ class _MainScreenState extends State<MainScreen> {
           _currentIndex = index;
         });
       },
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? tabColor.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

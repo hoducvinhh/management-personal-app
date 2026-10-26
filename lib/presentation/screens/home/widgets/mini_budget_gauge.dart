@@ -34,13 +34,17 @@ class MiniBudgetGauge extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFEC4899)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: AppColors.primary,
+                  Icons.account_balance_wallet_rounded,
+                  color: Colors.white,
                   size: 20,
                 ),
               ),
